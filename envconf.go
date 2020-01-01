@@ -1,19 +1,25 @@
 /*
  package envconf fills struct with system enviroment variables
  api:
-	type S struct {
-		A string `env:"STR" envdefault:"str"`
+	type St struct {
+		A string `env:"PATH" envdefault:"/usr/bin"`
+	    B int32 `env:"I32"`
 	}
-	s := S{}
+	s := St{}
+
+	// if all environment variable keys share a common prefix
 	err := envconf.Prefix("XAE_").Fill(&s)
+
+	// or just call Fill
 	err = envconf.Fill(&s)
 
  supported types:
-	string
-	[]string //TODO
-	number
-	[]number //TODO
-	bool: 1, t, T, TRUE, true, True, 0, f, F, FALSE, false, False
+	- string
+	- number
+	- bool: 1, t, T, TRUE, true, True, 0, f, F, FALSE, false, False
+	- TODO
+		- []string
+		- []number
 */
 package main
 
