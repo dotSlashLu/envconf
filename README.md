@@ -1,13 +1,13 @@
 # envconf
 
-Package envconf fills struct with system enviroment variables using struct tags
-, default values are supported.
+Package envconf fills struct with system enviroment variables using struct
+tags, default values are supported.
 
 ## API
 
 ```go
 type St struct {
-	A string `env:"PATH" envdefault:"/usr/bin"`
+    A string `env:"PATH" envdefault:"/usr/bin"`
     B int32 `env:"I32"`
 }
 s := St{}
