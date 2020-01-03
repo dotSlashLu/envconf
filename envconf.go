@@ -1,26 +1,25 @@
-/*
- package envconf fills struct with system enviroment variables
- api:
-	type St struct {
-		A string `env:"PATH" envdefault:"/usr/bin"`
-	    B int32 `env:"I32"`
-	}
-	s := St{}
-
-	// if all environment variable keys share a common prefix
-	err := envconf.Prefix("XAE_").Fill(&s)
-
-	// or just call Fill
-	err = envconf.Fill(&s)
-
- supported types:
-	- string
-	- number
-	- bool: 1, t, T, TRUE, true, True, 0, f, F, FALSE, false, False
-	- TODO
-		- []string
-		- []number
-*/
+// package envconf fills struct with system enviroment variables
+//
+// api:
+//	type St struct {
+//		A string `env:"PATH" envdefault:"/usr/bin"`
+//		B int32  `env:"I32"`
+//	}
+//	s := St{}
+//
+//	// if all environment variable keys share a common prefix
+//	err := envconf.Prefix("XAE_").Fill(&s)
+//
+//	// or just call Fill
+//	err = envconf.Fill(&s)
+//
+// supported types:
+//	- string
+//	- number
+//	- bool: 1, t, T, TRUE, true, True, 0, f, F, FALSE, false, False
+//	- TODO
+//		- []string
+//		- []number
 package main
 
 import (
@@ -53,6 +52,7 @@ func (ec *EC) env(k string) string {
 	return os.Getenv(k)
 }
 
+// Fill does the actual filling process
 func (ec *EC) Fill(in interface{}) (err error) {
 	v := reflect.ValueOf(in)
 	if v.Kind() != reflect.Ptr {
@@ -106,10 +106,16 @@ func (ec *EC) Fill(in interface{}) (err error) {
 	return
 }
 
+// Prefix configures the EC instance then returns it.
+// Usually a Fill call is chained after it.
 func Prefix(p string) *EC {
 	return &EC{cfg{prefix: p}}
 }
 
+// Fill fills a struct without configuration.
+// It accepts a pointer to a struct and sets input in place.
+// If an invalid type is passed in, or a field cannot be processed, it
+// returns an error.
 func Fill(in interface{}) error {
 	return (&EC{}).Fill(in)
 }

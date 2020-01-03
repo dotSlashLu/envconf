@@ -1,5 +1,7 @@
 # envconf
 
+[![GoDoc](https://godoc.org/github.com/dotSlashLu/envconf?status.svg)](https://godoc.org/github.com/dotSlashLu/envconf)
+
 Package envconf fills struct with system enviroment variables using struct
 tags, default values are supported.
 
@@ -8,7 +10,7 @@ tags, default values are supported.
 ```go
 type St struct {
     A string `env:"PATH" envdefault:"/usr/bin"`
-    B int32 `env:"I32"`
+    B int32  `env:"I32"`
 }
 s := St{}
 
