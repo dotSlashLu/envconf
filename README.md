@@ -11,6 +11,9 @@ tags, default values are supported.
 type St struct {
     A string `env:"PATH" envdefault:"/usr/bin"`
     B int32  `env:"I32"`
+    C struct {
+        Term string `env:"TERM" envdefault:"screen"` 
+    }
 }
 s := St{}
 
