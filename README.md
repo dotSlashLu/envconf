@@ -17,12 +17,12 @@ type St struct {
         Term string `env:"TERM" envdefault:"screen"` 
     }
 
-	// you can set a common prefix for fields of an 
-	// embedded struct by the envprefix tag
-	D struct {
-		Client string `env:"CLIENT"`	
-		TTY    string `env:"TTY"`
-	} `envprefix:"SSH_"`
+    // you can set a common prefix for fields of an 
+    // embedded struct by the envprefix tag
+    D struct {
+        Client string `env:"CLIENT"`	
+        TTY    string `env:"TTY"`
+    } `envprefix:"SSH_"`
 }
 s := St{}
 
