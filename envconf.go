@@ -2,8 +2,20 @@
 //
 // api:
 //	type St struct {
-//		A string `env:"PATH" envdefault:"/usr/bin"`
-//		B int32  `env:"I32"`
+//	    A string `env:"PATH" envdefault:"/usr/bin"`
+//	    B int32  `env:"I32"`
+//
+//		// embedded structs are supported
+//	    C struct {
+//	        Term string `env:"TERM" envdefault:"screen"`
+//	    }
+//
+//		// you can set a common prefix for fields of
+//		// an embedded struct by the envprefix tag
+//		D struct {
+//			Client string `env:"CLIENT"`
+//			TTY    string `env:"TTY"`
+//		} `envprefix:"SSH_"`
 //	}
 //	s := St{}
 //
@@ -21,7 +33,7 @@
 //	- TODO
 //		- []string
 //		- []number
-package main
+package envconf
 
 import (
 	"errors"
@@ -53,17 +65,21 @@ func (ec *EC) env(k string) string {
 	return os.Getenv(k)
 }
 
-func (ec *EC) fillField(st reflect.Type, stv reflect.Value) (err error) {
+// fillFields fills each field of a struct
+// fPrefix: field specific prefix
+func (ec *EC) fillFields(st reflect.Type, stv reflect.Value, fPrefix string) (err error) {
 	for i := 0; i < st.NumField(); i++ {
 		f := st.Field(i)
 		fv := stv.Field(i)
 
 		// process embedded struct
 		if fv.Kind() == reflect.Struct && fv.CanSet() {
-			err = ec.fillField(fv.Type(), fv)
+			p := f.Tag.Get("envprefix")
+			err = ec.fillFields(fv.Type(), fv, p)
 			if err != nil {
 				return
 			}
+			continue
 		}
 
 		k, hasEnv := f.Tag.Lookup("env")
@@ -73,6 +89,7 @@ func (ec *EC) fillField(st reflect.Type, stv reflect.Value) (err error) {
 		if !fv.CanSet() {
 			return ErrUnsettable
 		}
+		k = fPrefix + k
 		v := ec.env(k)
 		defaultv, hasDefault := f.Tag.Lookup("envdefault")
 		if v == "" && hasDefault {
@@ -117,7 +134,7 @@ func (ec *EC) Fill(in interface{}) (err error) {
 		// return fmt.Errorf("%w: %s", ErrNotSt, stv.Kind())
 	}
 	st := stv.Type()
-	err = ec.fillField(st, stv)
+	err = ec.fillFields(st, stv, "")
 	return
 }
 

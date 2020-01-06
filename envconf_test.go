@@ -1,4 +1,4 @@
-package main
+package envconf
 
 import (
 	"fmt"
@@ -78,4 +78,23 @@ func TestFill(t *testing.T) {
 		assert.EqualError(t, err, ErrUnsettable.Error())
 		t.Log(fmt.Sprintf("%+v", c))
 	})
+
+	xysv := "prefixed string value"
+	xysv2 := "another prefixed string value"
+	os.Setenv("X_Y_SV", xysv)
+	os.Setenv("X_Y_SV2", xysv2)
+	d := struct {
+		A struct {
+			A string `env:"SV"`
+			B string `env:"SV2"`
+		} `envprefix:"Y_"`
+	}{}
+	t.Run("embeded prefixed struct field", func(t *testing.T) {
+		err := Prefix("X_").Fill(&d)
+		assert.NoError(t, err, "should not error")
+		assert.Equal(t, d.A.A, xysv)
+		assert.Equal(t, d.A.B, xysv2)
+		t.Log(fmt.Sprintf("%+v", d))
+	})
+
 }

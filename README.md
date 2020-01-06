@@ -11,9 +11,18 @@ tags, default values are supported.
 type St struct {
     A string `env:"PATH" envdefault:"/usr/bin"`
     B int32  `env:"I32"`
+
+	// embedded structs are supported
     C struct {
         Term string `env:"TERM" envdefault:"screen"` 
     }
+
+	// you can set a common prefix for fields of an 
+	// embedded struct by the envprefix tag
+	D struct {
+		Client string `env:"CLIENT"`	
+		TTY    string `env:"TTY"`
+	} `envprefix:"SSH_"`
 }
 s := St{}
 
