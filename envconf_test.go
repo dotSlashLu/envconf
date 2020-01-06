@@ -1,8 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"github.com/stretchr/testify/assert"
 	"os"
+	"strconv"
 	"testing"
 )
 
@@ -36,14 +38,44 @@ func TestECFill(t *testing.T) {
 }
 
 func TestFill(t *testing.T) {
-	os.Setenv("I32", "123123")
+	i32v := int32(123123)
+	sv := "string value"
+	os.Setenv("I32", strconv.FormatInt(int64(i32v), 10))
+	os.Setenv("SV", sv)
+
 	a := struct {
-		A string `env:"PATH"`
+		A string `env:"SV"`
 		B int32  `env:"I32"`
 	}{}
 	t.Run("string and int fields", func(t *testing.T) {
 		err := Fill(&a)
 		assert.NoError(t, err, "should not error")
+		assert.Equal(t, a.A, sv)
+		assert.Equal(t, a.B, i32v)
 		t.Log(a)
+	})
+
+	b := struct {
+		A string
+		B struct {
+			A string `env:"SV"`
+		}
+	}{}
+	t.Run("embeded struct", func(t *testing.T) {
+		err := Fill(&b)
+		assert.NoError(t, err, "should not error")
+		assert.Equal(t, b.B.A, sv)
+		t.Log(fmt.Sprintf("%+v", b))
+	})
+
+	c := struct {
+		A struct {
+			a string `env:"SV"`
+		}
+	}{}
+	t.Run("embeded unsettable struct field", func(t *testing.T) {
+		err := Fill(&c)
+		assert.EqualError(t, err, ErrUnsettable.Error())
+		t.Log(fmt.Sprintf("%+v", c))
 	})
 }

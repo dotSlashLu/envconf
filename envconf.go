@@ -17,6 +17,7 @@
 //	- string
 //	- number
 //	- bool: 1, t, T, TRUE, true, True, 0, f, F, FALSE, false, False
+//	- struct with fields of supported type
 //	- TODO
 //		- []string
 //		- []number
@@ -52,24 +53,19 @@ func (ec *EC) env(k string) string {
 	return os.Getenv(k)
 }
 
-// Fill does the actual filling process
-func (ec *EC) Fill(in interface{}) (err error) {
-	v := reflect.ValueOf(in)
-	if v.Kind() != reflect.Ptr {
-		return ErrNotPtr
-		// requires 1.13
-		// return fmt.Errorf("%w: %s", ErrNotPtr, v.Kind())
-	}
-	stv := reflect.Indirect(v)
-	if stv.Kind() != reflect.Struct {
-		return ErrNotSt
-		// requires 1.13
-		// return fmt.Errorf("%w: %s", ErrNotSt, stv.Kind())
-	}
-	st := stv.Type()
+func (ec *EC) fillField(st reflect.Type, stv reflect.Value) (err error) {
 	for i := 0; i < st.NumField(); i++ {
 		f := st.Field(i)
 		fv := stv.Field(i)
+
+		// process embedded struct
+		if fv.Kind() == reflect.Struct && fv.CanSet() {
+			err = ec.fillField(fv.Type(), fv)
+			if err != nil {
+				return
+			}
+		}
+
 		k, hasEnv := f.Tag.Lookup("env")
 		if !hasEnv {
 			continue
@@ -103,6 +99,25 @@ func (ec *EC) Fill(in interface{}) (err error) {
 			return
 		}
 	}
+	return
+}
+
+// Fill does the actual filling process
+func (ec *EC) Fill(in interface{}) (err error) {
+	v := reflect.ValueOf(in)
+	if v.Kind() != reflect.Ptr {
+		return ErrNotPtr
+		// requires 1.13
+		// return fmt.Errorf("%w: %s", ErrNotPtr, v.Kind())
+	}
+	stv := reflect.Indirect(v)
+	if stv.Kind() != reflect.Struct {
+		return ErrNotSt
+		// requires 1.13
+		// return fmt.Errorf("%w: %s", ErrNotSt, stv.Kind())
+	}
+	st := stv.Type()
+	err = ec.fillField(st, stv)
 	return
 }
 
